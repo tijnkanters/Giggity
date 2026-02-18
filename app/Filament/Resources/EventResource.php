@@ -267,11 +267,14 @@ class EventResource extends Resource
                 ->schema([
                     Infolists\Components\TextEntry::make('type')
                         ->badge(),
-                    Infolists\Components\TextEntry::make('name'),
+                    Infolists\Components\TextEntry::make('name')
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('date')
+                        ->weight('bold')
                         ->date(),
                     Infolists\Components\TextEntry::make('creator.name')
-                        ->label('Created By'),
+                        ->label('Created By')
+                        ->weight('bold'),
                 ])
                 ->columns(2),
 
@@ -280,15 +283,19 @@ class EventResource extends Resource
                 ->schema([
                     Infolists\Components\TextEntry::make('set_time_from')
                         ->label('From')
+                        ->weight('bold')
                         ->time(),
                     Infolists\Components\TextEntry::make('set_time_to')
                         ->label('To')
+                        ->weight('bold')
                         ->time(),
                     Infolists\Components\TextEntry::make('set_info')
                         ->label('Set Info')
+                        ->weight('bold')
                         ->columnSpanFull(),
                     Infolists\Components\TextEntry::make('extra_information')
                         ->label('Extra Information')
+                        ->weight('bold')
                         ->columnSpanFull(),
                     Infolists\Components\TextEntry::make('status')
                         ->badge(),
@@ -299,9 +306,11 @@ class EventResource extends Resource
             Infolists\Components\Section::make('Venue')
                 ->schema([
                     Infolists\Components\TextEntry::make('venue_name')
-                        ->label('Name'),
+                        ->label('Name')
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('venue_location')
                         ->label('Location')
+                        ->weight('bold')
                         ->suffixAction(
                             Infolists\Components\Actions\Action::make('openVenueMap')
                                 ->icon('heroicon-o-map-pin')
@@ -317,9 +326,11 @@ class EventResource extends Resource
             Infolists\Components\Section::make('Hotel')
                 ->schema([
                     Infolists\Components\TextEntry::make('hotel_name')
-                        ->label('Name'),
+                        ->label('Name')
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('hotel_location')
                         ->label('Location')
+                        ->weight('bold')
                         ->suffixAction(
                             Infolists\Components\Actions\Action::make('openHotelMap')
                                 ->icon('heroicon-o-map-pin')
@@ -330,6 +341,7 @@ class EventResource extends Resource
                         ),
                     Infolists\Components\TextEntry::make('hotel_extra_info')
                         ->label('Extra Info')
+                        ->weight('bold')
                         ->columnSpanFull(),
                 ])
                 ->columns(2)
@@ -340,11 +352,14 @@ class EventResource extends Resource
                 ->schema([
                     Infolists\Components\TextEntry::make('time_from')
                         ->label('Departure Time')
+                        ->weight('bold')
                         ->time(),
                     Infolists\Components\TextEntry::make('time_to')
                         ->label('Arrival Time')
+                        ->weight('bold')
                         ->time(),
                     Infolists\Components\TextEntry::make('flight_number')
+                        ->weight('bold')
                         ->label('Flight Number'),
                 ])
                 ->columns(3)
@@ -353,9 +368,11 @@ class EventResource extends Resource
             Infolists\Components\Section::make('Route')
                 ->schema([
                     Infolists\Components\TextEntry::make('leave_from_name')
-                        ->label('Departure From'),
+                        ->label('Departure From')
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('leave_from_location')
                         ->label('Departure Location')
+                        ->weight('bold')
                         ->suffixAction(
                             Infolists\Components\Actions\Action::make('openDepartureMap')
                                 ->icon('heroicon-o-map-pin')
@@ -365,9 +382,11 @@ class EventResource extends Resource
                                 ->openUrlInNewTab()
                         ),
                     Infolists\Components\TextEntry::make('arrival_at_name')
-                        ->label('Arrival At'),
+                        ->label('Arrival At')
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('arrival_at_location')
                         ->label('Arrival Location')
+                        ->weight('bold')
                         ->suffixAction(
                             Infolists\Components\Actions\Action::make('openArrivalMap')
                                 ->icon('heroicon-o-map-pin')

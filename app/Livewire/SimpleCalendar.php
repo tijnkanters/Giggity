@@ -64,10 +64,13 @@ class SimpleCalendar extends Component
         foreach ($events as $event) {
             $dateKey = $event->date->format('Y-m-d');
             if (!isset($eventsByDate[$dateKey])) {
-                $eventsByDate[$dateKey] = ['hasBooking' => false, 'hasTravel' => false];
+                $eventsByDate[$dateKey] = ['hasBooking' => false, 'hasTravel' => false, 'isOptional' => false];
             }
             if ($event->type->value === 'booking') {
                 $eventsByDate[$dateKey]['hasBooking'] = true;
+                if ($event->status === \App\Enums\BookingStatus::OPTION) {
+                    $eventsByDate[$dateKey]['isOptional'] = true;
+                }
             } else {
                 $eventsByDate[$dateKey]['hasTravel'] = true;
             }
@@ -86,6 +89,7 @@ class SimpleCalendar extends Component
                 'date' => null,
                 'hasBooking' => false,
                 'hasTravel' => false,
+                'isOptional' => false,
                 'isToday' => false,
             ];
         }
@@ -94,12 +98,14 @@ class SimpleCalendar extends Component
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $date = Carbon::createFromDate($this->currentYear, $this->currentMonth, $day);
             $dateKey = $date->format('Y-m-d');
+            $dayData = $eventsByDate[$dateKey] ?? [];
 
             $days[] = [
                 'day' => $day,
                 'date' => $dateKey,
-                'hasBooking' => $eventsByDate[$dateKey]['hasBooking'] ?? false,
-                'hasTravel' => $eventsByDate[$dateKey]['hasTravel'] ?? false,
+                'hasBooking' => $dayData['hasBooking'] ?? false,
+                'hasTravel' => $dayData['hasTravel'] ?? false,
+                'isOptional' => $dayData['isOptional'] ?? false,
                 'isToday' => $date->isToday(),
             ];
         }

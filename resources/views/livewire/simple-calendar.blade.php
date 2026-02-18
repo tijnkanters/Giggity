@@ -40,10 +40,19 @@
                 <div style="height: 48px;"></div>
             @else
                 @php
+                    $isOptional = $day['isOptional'] ?? false;
                     if ($day['hasBooking'] && $day['hasTravel']) {
-                        $ringStyle = 'box-shadow: 0 0 0 2.5px #ef4444; outline: 2.5px solid #3b82f6; outline-offset: 4px;';
+                        if ($isOptional) {
+                            $ringStyle = 'border: 2.5px dashed #ef4444; outline: 2.5px solid #3b82f6; outline-offset: 1.5px;';
+                        } else {
+                            $ringStyle = 'box-shadow: 0 0 0 2.5px #ef4444; outline: 2.5px solid #3b82f6; outline-offset: 4px;';
+                        }
                     } elseif ($day['hasBooking']) {
-                        $ringStyle = 'box-shadow: 0 0 0 2px #ef4444;';
+                        if ($isOptional) {
+                            $ringStyle = 'border: 2px dashed #ef4444;';
+                        } else {
+                            $ringStyle = 'box-shadow: 0 0 0 2px #ef4444;';
+                        }
                     } elseif ($day['hasTravel']) {
                         $ringStyle = 'box-shadow: 0 0 0 2px #3b82f6;';
                     } else {
@@ -76,6 +85,11 @@
             <span
                 style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px #ef4444;"></span>
             <span>Booking</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span
+                style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed #ef4444;"></span>
+            <span>Option</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span
