@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = ["...", "nginx"]
+
+[phases.build]
+cmds = [
+    "composer install --ignore-platform-reqs",
+    "npm i",
+    "npm run build",
+    "mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx"
+]
+
+[start]
+cmd = "php artisan storage:link 2>/dev/null; php-fpm & nginx -c /app/nginx.conf -g 'daemon off;'"
