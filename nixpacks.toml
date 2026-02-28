@@ -1,15 +1,9 @@
-[phases.setup]
-nixPkgs = ["...", "nginx"]
-
 [phases.build]
 cmds = [
     "composer install --ignore-platform-reqs",
     "npm i",
-    "npm run build",
-    "mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx",
-    "mkdir -p /etc/nginx && MIME_PATH=$(find /nix -name 'mime.types' -path '*/conf/*' 2>/dev/null | head -n 1) && if [ -n \"$MIME_PATH\" ]; then cp $MIME_PATH /etc/nginx/mime.types; fi && cp /app/nginx.conf /etc/nginx/nginx.conf",
-    "cp $(find /nix -name 'fastcgi_params' -path '*/conf/*' 2>/dev/null | head -n 1) /etc/nginx/fastcgi_params 2>/dev/null || true"
+    "npm run build"
 ]
 
 [start]
-cmd = "php artisan storage:link --force 2>/dev/null; php-fpm & nginx -c /etc/nginx/nginx.conf -g 'daemon off;'"
+cmd = "php artisan storage:link --force 2>/dev/null; php artisan migrate --force 2>/dev/null; php artisan serve --host=0.0.0.0 --port=3000"
