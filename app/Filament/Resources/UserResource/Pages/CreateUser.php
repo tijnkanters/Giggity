@@ -12,7 +12,7 @@ class CreateUser extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Extract role before creating the user
-        $this->role = $data['role'] ?? 'member';
+        $this->role = $data['role'] ?? 'artist';
         unset($data['role']);
 
         return $data;
@@ -39,5 +39,5 @@ class CreateUser extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    private string $role = 'member';
+    private mixed $role = 'artist';
 }
