@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(new HtmlString('<span class="giggity-brand"><span>G</span><span class="giggity-brand-text">iggity</span></span>'))
             ->favicon(asset('favicon.svg'))
             ->login(\App\Filament\Pages\Auth\Login::class)
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])

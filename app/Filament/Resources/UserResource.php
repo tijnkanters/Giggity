@@ -42,7 +42,7 @@ class UserResource extends Resource
                     Forms\Components\Select::make('role')
                         ->options(OrganizationRole::class)
                         ->required()
-                        ->default(OrganizationRole::MEMBER),
+                        ->default(OrganizationRole::ARTIST),
                 ])
                 ->columns(2),
         ]);

@@ -82,9 +82,9 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole(OrganizationRole::MANAGER);
     }
 
-    public function isMember(): bool
+    public function isArtist(): bool
     {
-        return $this->hasRole(OrganizationRole::MEMBER);
+        return $this->hasRole(OrganizationRole::ARTIST);
     }
 
     public function hasRole(OrganizationRole $role): bool
