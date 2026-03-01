@@ -15,7 +15,9 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Filament\View\PanelsRenderHook;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -56,6 +58,18 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 \App\Http\Middleware\EnsureUserBelongsToOrganization::class,
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn() => new HtmlString(
+                    '<style>.org-label{display:none}.fi-sidebar-open .org-label{display:flex}</style>
+                    <script>if(window.innerWidth<1024){document.body.classList.remove("fi-sidebar-open")}</script>
+                    <div style="margin-bottom: 0.25rem;">
+                        <span class="org-label" style="font-size: 0.8rem; font-weight: 600; text-transform: capitalize; letter-spacing: 0.05em; color: rgb(156 163 175); align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ' . e(Auth::user()?->currentOrganization?->name ?? '') . '
+                        </span>
+                    </div>'
+                ),
+            );
     }
 }
