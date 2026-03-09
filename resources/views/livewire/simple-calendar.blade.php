@@ -89,7 +89,7 @@
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span
                 style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed #ef4444;"></span>
-            <span>Option</span>
+            <span>Pending</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span

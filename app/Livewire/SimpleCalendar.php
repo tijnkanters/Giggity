@@ -68,7 +68,7 @@ class SimpleCalendar extends Component
             }
             if ($event->type->value === 'booking') {
                 $eventsByDate[$dateKey]['hasBooking'] = true;
-                if ($event->status === \App\Enums\BookingStatus::OPTION) {
+                if ($event->status?->isPending()) {
                     $eventsByDate[$dateKey]['isOptional'] = true;
                 }
             } else {

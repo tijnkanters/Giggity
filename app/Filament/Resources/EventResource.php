@@ -8,9 +8,11 @@ use App\Enums\EventType;
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
 use App\Models\Travel;
+use App\Support\AirportData;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -56,11 +58,16 @@ class EventResource extends Resource
                     Forms\Components\DatePicker::make('date')
                         ->required()
                         ->minDate(fn(?Model $record): ?string => $record ? null : today()->toDateString()),
+                    Forms\Components\Select::make('status')
+                        ->options(BookingStatus::class)
+                        ->default(BookingStatus::OPTION)
+                        ->required()
+                        ->visible(fn(Get $get): bool => $get('type') === 'booking'),
                 ])
                 ->columns(2),
 
             // --- Booking-specific ---
-            Forms\Components\Section::make('Set Times')
+            Forms\Components\Section::make('Show Info')
                 ->schema([
                     Forms\Components\TimePicker::make('set_time_from')
                         ->label('Set Time From')
@@ -68,16 +75,12 @@ class EventResource extends Resource
                     Forms\Components\TimePicker::make('set_time_to')
                         ->label('Set Time To')
                         ->seconds(false),
-                    Forms\Components\Textarea::make('set_info')
+                    Forms\Components\TextInput::make('set_info')
                         ->label('Set Info')
-                        ->rows(3),
+                        ->placeholder('mainstage / b2b'),
                     Forms\Components\Textarea::make('extra_information')
                         ->label('Extra Information')
                         ->rows(3),
-                    Forms\Components\Select::make('status')
-                        ->options(BookingStatus::class)
-                        ->default(BookingStatus::OPTION)
-                        ->required(),
                 ])
                 ->columns(2)
                 ->visible(fn(Get $get): bool => $get('type') === 'booking'),
@@ -116,10 +119,63 @@ class EventResource extends Resource
                                 ->openUrlInNewTab()
                                 ->visible(fn(Get $get): bool => filled($get('hotel_location')))
                         ),
+                    Forms\Components\TextInput::make('hotel_booking_number')
+                        ->label('Booking Number'),
+                    Forms\Components\TextInput::make('hotel_fnb_credit')
+                        ->label('Food & Beverage Credit')
+                        ->numeric()
+                        ->prefix('€'),
+                    Forms\Components\Checkbox::make('hotel_fnb_credit_approved')
+                        ->label('F&B Credit Approved'),
                     Forms\Components\Textarea::make('hotel_extra_info')
                         ->label('Hotel Extra Info')
                         ->rows(3)
                         ->columnSpanFull(),
+                ])
+                ->columns(2)
+                ->visible(fn(Get $get): bool => $get('type') === 'booking'),
+
+            Forms\Components\Section::make('Ground Transport')
+                ->schema([
+                    Forms\Components\TextInput::make('gt_driver_name')
+                        ->label('Driver Name'),
+                    Forms\Components\TextInput::make('gt_driver_phone')
+                        ->label('Driver Phone Number'),
+                    Forms\Components\TextInput::make('gt_car_type')
+                        ->label('Car Type'),
+                    Forms\Components\TextInput::make('gt_airport_hotel')
+                        ->label('Airport → Hotel'),
+                    Forms\Components\TextInput::make('gt_hotel_venue')
+                        ->label('Hotel → Venue'),
+                    Forms\Components\TextInput::make('gt_venue_hotel')
+                        ->label('Venue → Hotel'),
+                    Forms\Components\TextInput::make('gt_hotel_airport')
+                        ->label('Hotel → Airport'),
+                ])
+                ->columns(2)
+                ->visible(fn(Get $get): bool => $get('type') === 'booking'),
+
+            Forms\Components\Section::make('Invoicing')
+                ->schema([
+                    Forms\Components\TextInput::make('booking_fee')
+                        ->label('Booking Fee')
+                        ->numeric()
+                        ->prefix('€'),
+                    Forms\Components\TextInput::make('booking_fee_note')
+                        ->label('Fee Note')
+                        ->placeholder('Landed fee'),
+                    Forms\Components\TextInput::make('invoice_company_name')
+                        ->label('Company Name'),
+                    Forms\Components\TextInput::make('invoice_vat_number')
+                        ->label('VAT Number'),
+                    Forms\Components\TextInput::make('invoice_coc_number')
+                        ->label('Organisation CoC'),
+                    Forms\Components\TextInput::make('invoice_contact_person')
+                        ->label('Contact Person'),
+                    Forms\Components\DatePicker::make('invoice_payment_date')
+                        ->label('Agreed Payment Date'),
+                    Forms\Components\Checkbox::make('invoice_sent')
+                        ->label('Invoice Sent'),
                 ])
                 ->columns(2)
                 ->visible(fn(Get $get): bool => $get('type') === 'booking'),
@@ -135,16 +191,25 @@ class EventResource extends Resource
                         ->seconds(false),
                     Forms\Components\TextInput::make('flight_number')
                         ->label('Flight Number'),
+                    Forms\Components\TextInput::make('travel_booking_number')
+                        ->label('Booking Number'),
                 ])
-                ->columns(3)
+                ->columns(2)
                 ->visible(fn(Get $get): bool => $get('type') === 'travel'),
 
             Forms\Components\Section::make('Departure')
                 ->schema([
-                    Forms\Components\TextInput::make('leave_from_name')
-                        ->label('Departure From'),
+                    Forms\Components\Select::make('leave_from_name')
+                        ->label('Departure From (IATA)')
+                        ->options(AirportData::selectOptions())
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(function (Set $set, ?string $state) {
+                            $set('leave_from_location', $state ? AirportData::locationFor($state) : null);
+                        }),
                     Forms\Components\TextInput::make('leave_from_location')
                         ->label('Location')
+                        ->readOnly()
                         ->suffixAction(
                             Forms\Components\Actions\Action::make('openDepartureMap')
                                 ->icon('heroicon-o-map-pin')
@@ -160,10 +225,17 @@ class EventResource extends Resource
 
             Forms\Components\Section::make('Arrival')
                 ->schema([
-                    Forms\Components\TextInput::make('arrival_at_name')
-                        ->label('Arrival At'),
+                    Forms\Components\Select::make('arrival_at_name')
+                        ->label('Arrival At (IATA)')
+                        ->options(AirportData::selectOptions())
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(function (Set $set, ?string $state) {
+                            $set('arrival_at_location', $state ? AirportData::locationFor($state) : null);
+                        }),
                     Forms\Components\TextInput::make('arrival_at_location')
                         ->label('Location')
+                        ->readOnly()
                         ->suffixAction(
                             Forms\Components\Actions\Action::make('openArrivalMap')
                                 ->icon('heroicon-o-map-pin')
@@ -272,6 +344,8 @@ class EventResource extends Resource
                     Infolists\Components\TextEntry::make('date')
                         ->weight('bold')
                         ->date(),
+                    Infolists\Components\TextEntry::make('status')
+                        ->badge(),
                     Infolists\Components\TextEntry::make('creator.name')
                         ->label('Created By')
                         ->weight('bold'),
@@ -279,7 +353,7 @@ class EventResource extends Resource
                 ->columns(2),
 
             // Booking details
-            Infolists\Components\Section::make('Set Times')
+            Infolists\Components\Section::make('Show Info')
                 ->schema([
                     Infolists\Components\TextEntry::make('set_time_from')
                         ->label('From')
@@ -291,14 +365,11 @@ class EventResource extends Resource
                         ->time(),
                     Infolists\Components\TextEntry::make('set_info')
                         ->label('Set Info')
-                        ->weight('bold')
-                        ->columnSpanFull(),
+                        ->weight('bold'),
                     Infolists\Components\TextEntry::make('extra_information')
                         ->label('Extra Information')
                         ->weight('bold')
                         ->columnSpanFull(),
-                    Infolists\Components\TextEntry::make('status')
-                        ->badge(),
                 ])
                 ->columns(2)
                 ->visible(fn(Model $record): bool => $record->type === EventType::BOOKING),
@@ -339,6 +410,16 @@ class EventResource extends Resource
                                     : null)
                                 ->openUrlInNewTab()
                         ),
+                    Infolists\Components\TextEntry::make('hotel_booking_number')
+                        ->label('Booking Number')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('hotel_fnb_credit')
+                        ->label('F&B Credit')
+                        ->money('EUR')
+                        ->weight('bold'),
+                    Infolists\Components\IconEntry::make('hotel_fnb_credit_approved')
+                        ->label('F&B Credit Approved')
+                        ->boolean(),
                     Infolists\Components\TextEntry::make('hotel_extra_info')
                         ->label('Extra Info')
                         ->weight('bold')
@@ -347,7 +428,65 @@ class EventResource extends Resource
                 ->columns(2)
                 ->visible(fn(Model $record): bool => $record->type === EventType::BOOKING),
 
-            // Travel details
+            Infolists\Components\Section::make('Ground Transport')
+                ->schema([
+                    Infolists\Components\TextEntry::make('gt_driver_name')
+                        ->label('Driver Name')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_driver_phone')
+                        ->label('Driver Phone')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_car_type')
+                        ->label('Car Type')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_airport_hotel')
+                        ->label('Airport → Hotel')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_hotel_venue')
+                        ->label('Hotel → Venue')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_venue_hotel')
+                        ->label('Venue → Hotel')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('gt_hotel_airport')
+                        ->label('Hotel → Airport')
+                        ->weight('bold'),
+                ])
+                ->columns(2)
+                ->visible(fn(Model $record): bool => $record->type === EventType::BOOKING),
+
+            Infolists\Components\Section::make('Invoicing')
+                ->schema([
+                    Infolists\Components\TextEntry::make('booking_fee')
+                        ->label('Booking Fee')
+                        ->money('EUR')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('booking_fee_note')
+                        ->label('Fee Note')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('invoice_company_name')
+                        ->label('Company Name')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('invoice_vat_number')
+                        ->label('VAT Number')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('invoice_coc_number')
+                        ->label('Organisation CoC')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('invoice_contact_person')
+                        ->label('Contact Person')
+                        ->weight('bold'),
+                    Infolists\Components\TextEntry::make('invoice_payment_date')
+                        ->label('Agreed Payment Date')
+                        ->date()
+                        ->weight('bold'),
+                    Infolists\Components\IconEntry::make('invoice_sent')
+                        ->label('Invoice Sent')
+                        ->boolean(),
+                ])
+                ->columns(2)
+                ->visible(fn(Model $record): bool => $record->type === EventType::BOOKING),
+
             Infolists\Components\Section::make('Travel Details')
                 ->schema([
                     Infolists\Components\TextEntry::make('time_from')
@@ -361,8 +500,11 @@ class EventResource extends Resource
                     Infolists\Components\TextEntry::make('flight_number')
                         ->weight('bold')
                         ->label('Flight Number'),
+                    Infolists\Components\TextEntry::make('travel_booking_number')
+                        ->weight('bold')
+                        ->label('Booking Number'),
                 ])
-                ->columns(3)
+                ->columns(2)
                 ->visible(fn(Model $record): bool => $record->type === EventType::TRAVEL),
 
             Infolists\Components\Section::make('Route')
