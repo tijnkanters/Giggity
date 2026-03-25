@@ -298,6 +298,11 @@ class EventResource extends Resource
                     ->label('Flight')
                     ->placeholder('—')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('booking_fee')
+                    ->label('Fee')
+                    ->money('EUR')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
