@@ -193,6 +193,12 @@ class EventResource extends Resource
                         ->label('Flight Number'),
                     Forms\Components\TextInput::make('travel_booking_number')
                         ->label('Booking Number'),
+                    Forms\Components\TextInput::make('travel_booking_class')
+                        ->label('Booking Class'),
+                    Forms\Components\Textarea::make('travel_extra_info')
+                        ->label('Extra Information')
+                        ->rows(3)
+                        ->columnSpanFull(),
                 ])
                 ->columns(2)
                 ->visible(fn(Get $get): bool => $get('type') === 'travel'),
@@ -508,6 +514,13 @@ class EventResource extends Resource
                     Infolists\Components\TextEntry::make('travel_booking_number')
                         ->weight('bold')
                         ->label('Booking Number'),
+                    Infolists\Components\TextEntry::make('travel_booking_class')
+                        ->weight('bold')
+                        ->label('Booking Class'),
+                    Infolists\Components\TextEntry::make('travel_extra_info')
+                        ->weight('bold')
+                        ->label('Extra Information')
+                        ->columnSpanFull(),
                 ])
                 ->columns(2)
                 ->visible(fn(Model $record): bool => $record->type === EventType::TRAVEL),

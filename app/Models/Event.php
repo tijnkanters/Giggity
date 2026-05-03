@@ -63,6 +63,8 @@ class Event extends Model
         'leave_from_location',
         'arrival_at_name',
         'arrival_at_location',
+        'travel_booking_class',
+        'travel_extra_info',
     ];
 
     protected function casts(): array
